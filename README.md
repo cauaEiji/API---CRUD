@@ -1,4 +1,4 @@
-# 📡 API de Gerenciamento de Dispositivos
+# API de Gerenciamento de Dispositivos
 
 Esta aplicação fornece uma API RESTful para **gestão de usuários, categorias e dispositivos**, construída em **Flask** com suporte a autenticação baseada em **JWT (JSON Web Tokens)**.  
 
@@ -11,7 +11,7 @@ Entre as regras de negócio críticas implementadas destacam-se:
 
 ---
 
-## 🛠️ Tecnologias
+## Tecnologias
 
 **Linguagens:**  
 - Python  
@@ -33,6 +33,4 @@ Entre as regras de negócio críticas implementadas destacam-se:
 **Protocolo:**  
 - HTTP (RESTful)  
 
----
 
-## 📂 Estrutura do Projeto
