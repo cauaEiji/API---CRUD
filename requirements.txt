@@ -4,4 +4,7 @@ Flask-Migrate
 Flask-JWT-Extended
 Werkzeug
 gunicorn
-pytest  # <-- Adicione esta linha
+pytest
+marshmallow
+flask-marshmallow
+flask-cors 

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+
+  api:
+    build: .
+
+    container_name: api-dispositivos
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - .:/app
+    
+
+    environment:
+
+      - JWT_SECRET_KEY=sua-chave-secreta-forte-aqui 
+
+      - FLASK_ENV=production
+
+    command: >
+      sh -c "flask db upgrade && gunicorn --bind 0.0.0.0:5000 app:create_app"
