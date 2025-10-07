@@ -1,84 +1,50 @@
 # API de Gerenciamento de Dispositivos
 
-Esta aplicação fornece uma **API RESTful CRUD** para a gestão de usuários, **Categorias** e **Dispositivos**, construída em **Flask** e autenticada via **JWT**. O projeto cumpre todos os requisitos do desafio, com foco em boas práticas, segurança básica e facilidade de execução via Docker.
+Esta aplicação fornece uma **API RESTful CRUD** robusta para a gestão de usuários, **Categorias** e **Dispositivos**. A API foi construída em **Python** utilizando o microframework **Flask**, com autenticação segura via **JWT (JSON Web Tokens)**.
+
+O projeto cumpre integralmente todos os requisitos do desafio, com foco em boas práticas, validação de entrada rigorosa e infraestrutura simplificada via Docker.
 
 ---
 
-## Tecnologias Principais
+## Decisões e Tecnologias Principais
 
 | Categoria | Tecnologia | Justificativa de Uso (Decisões Técnicas) |
 | :--- | :--- | :--- |
-| **Backend** | Python, Flask | Escolha ideal para prototipagem rápida e APIs pequenas/médias, mantendo o controle total sobre as bibliotecas. |
-| **ORM/Database**| Flask-SQLAlchemy, SQLite | SQLite foi escolhido para simplificar a execução em ambiente local/Docker, evitando dependências externas (como PostgreSQL) para o desafio. |
-| **Autenticação**| Flask-JWT-Extended | Implementa um padrão de segurança robusto para rotas protegidas com poucas linhas de código. |
-| **Validação** | Marshmallow | Usado para garantir a **Validação de Entrada** de todos os payloads (`POST`/`PUT`/`PATCH`), assegurando que os dados estejam limpos e completos antes de chegarem à lógica de negócio. |
-| **Infraestrutura**| Docker, Docker Compose, Gunicorn | O Docker Compose garante a execução consistente em qualquer ambiente. Gunicorn é o servidor WSGI de produção padrão para Python/Flask, substituindo o servidor de desenvolvimento. |
-| **Testes** | Pytest | Framework padrão para testes em Python, usado para verificar as regras de negócio críticas. |
-| **Migrations** | Flask-Migrate (Alembic) | Essencial para o versionamento do banco de dados, permitindo a evolução segura do schema sem a perda de dados. |
+| **Backend** | Python, Flask | Escolha ideal para APIs pequenas/médias que exigem alta performance e controle, oferecendo flexibilidade e velocidade no desenvolvimento. |
+| **ORM/Database**| Flask-SQLAlchemy, SQLite | SQLite foi escolhido para simplificar a execução em ambiente local/Docker, eliminando a necessidade de um banco de dados externo para o desafio. |
+| **Autenticação**| Flask-JWT-Extended | Implementa um padrão de segurança **stateless** (sem estado) para rotas protegidas, garantindo acesso seguro com poucas linhas de código. |
+| **Validação** | Marshmallow | Usado para garantir a **Validação de Entrada** de todos os payloads (`POST`/`PUT`/`PATCH`) de forma declarativa e padronizada, prevenindo erros e vulnerabilidades. |
+| **Infraestrutura**| Docker, Docker Compose, Gunicorn | O **Docker Compose** garante a subida consistente do ambiente em qualquer SO. **Gunicorn** é o servidor WSGI de produção padrão para Python/Flask, oferecendo robustez e concorrência. |
+| **Testes** | Pytest | Framework padrão e simples, usado para verificar as regras de negócio críticas (como bloqueio de exclusão e unicidade de serial). |
+| **Migrations** | Flask-Migrate (Alembic) | Essencial para o versionamento e a evolução segura do schema do banco de dados (BDD), garantindo que as tabelas sejam criadas corretamente na inicialização. |
 
 ---
 
-## Como Executar o Projeto
+## Endpoints e Exemplos de Requisição
 
-### Pré-requisitos
+A coleção do **Postman** (`postman_collection.json`) já contém todos os endpoints configurados, mas os exemplos abaixo demonstram o fluxo principal da API.
 
-* Docker e Docker Compose (Recomendado)
-* Python e `pip` (Para execução local)
+**URL Base:** `http://localhost:5000`
+**Header de Acesso (Necessário para todas as rotas de CRUD):** `Authorization: Bearer <access_token>`
 
-### Opção 1: Usando Docker Compose (Recomendado)
+### 1. Autenticação (POST)
 
-Esta é a maneira mais fácil de iniciar a API, pois ela constrói a imagem e aplica as migrations automaticamente.
+| Rota | Request Body (JSON) | Response Body (JSON - Sucesso) |
+| :--- | :--- | :--- |
+| `/auth/register` | `{"username": "admin", "password": "123456"}` | `{"msg": "Usuário criado com sucesso"}` |
+| `/auth/login` | `{"username": "admin", "password": "123456"}` | `{"access_token": "eyJhbGciOiJIUzI1NiI..."}` |
 
-1.  **Crie o arquivo de ambiente** a partir do template:
-    ```bash
-    cp .env.example .env
-    # Edite o .env e defina uma JWT_SECRET_KEY forte.
-    ```
+### 2. CRUD de Categorias
 
-2.  **Inicie o Serviço:** O Docker Compose irá aplicar as migrations e iniciar o Gunicorn na porta 5000.
-    ```bash
-    docker-compose up --build
-    ```
+| Método | Rota | Descrição | Regras Específicas |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/categorias` | Cria nova categoria. | `nome` é obrigatório e único. |
+| `PUT/PATCH`| `/categorias/1` | Atualiza categoria. | Validação de `nome` único. |
+| `DELETE` | `/categorias/1` | Exclui. | **Bloqueado (400)** se houver dispositivos vinculados. |
 
-3.  A API estará acessível em `http://localhost:5000`.
-
-### Opção 2: Execução Local
-
-1.  **Crie o arquivo de ambiente** (opcional, mas recomendado) e defina a chave JWT:
-    ```bash
-    # Exemplo: export JWT_SECRET_KEY="SUA_CHAVE_AQUI"
-    ```
-
-2.  **Crie o Virtual Environment e instale as dependências:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # ou venv\Scripts\activate no Windows
-    pip install -r requirements.txt
-    ```
-
-3.  **Configuração do Flask-Migrate:**
-    O projeto usa Migrations para criar e atualizar as tabelas.
-
-    * **Executar a Migração Inicial:**
-        ```bash
-        flask db upgrade
-        ```
-        *(Isso criará o arquivo `app.db` e todas as tabelas.)*
-
-4.  **Inicie a Aplicação:**
-    ```bash
-    flask run
-    ```
-    A API estará acessível em `http://127.0.0.1:5000`.
-
----
-
-## Testes Automatizados
-
-As regras de negócio críticas são cobertas por testes automatizados com Pytest.
-
-**Para rodar os testes:**
-
-```bash
-# Certifique-se de estar no ambiente virtual ou no container
-pytest
+**Exemplo de Criação (POST /categorias)**
+```json
+{
+  "nome": "Servidores",
+  "descricao": "Máquinas de infraestrutura"
+}
