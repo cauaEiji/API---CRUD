@@ -1,4 +1,4 @@
-# ⚙️ API RESTful de Gestão de Ativos (Asset Management)
+# API RESTful de Gestão de Ativos (Asset Management)
 
 Esta aplicação é uma **API RESTful CRUD** para gerenciamento de **Usuários**, **Categorias** e **Dispositivos**. A arquitetura foi desenvolvida em **Python** utilizando **Flask**, com um foco central em segurança, validação de dados e facilidade de execução via Docker.
 
