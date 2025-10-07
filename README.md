@@ -1,36 +1,50 @@
 # API de Gerenciamento de Dispositivos
 
-Esta aplicação fornece uma API RESTful para **gestão de usuários, categorias e dispositivos**, construída em **Flask** com suporte a autenticação baseada em **JWT (JSON Web Tokens)**.  
+Esta aplicação fornece uma **API RESTful CRUD** robusta para a gestão de usuários, **Categorias** e **Dispositivos**. A API foi construída em **Python** utilizando o microframework **Flask**, com autenticação segura via **JWT (JSON Web Tokens)**.
 
-O projeto segue boas práticas de arquitetura, utilizando **SQLAlchemy** como ORM, **Flask-Migrate** para versionamento de banco de dados, e **pytest** para testes automatizados.  
-Entre as regras de negócio críticas implementadas destacam-se:  
-
-- Bloqueio da exclusão de categorias que possuam dispositivos vinculados.  
-- Validação de seriais únicos para dispositivos.  
-- Controle de status de dispositivos (`ativo` / `inativo`).  
+O projeto cumpre integralmente todos os requisitos do desafio, com foco em boas práticas, validação de entrada rigorosa e infraestrutura simplificada via Docker.
 
 ---
 
-## Tecnologias
+## Decisões e Tecnologias Principais
 
-**Linguagens:**  
-- Python  
-- SQL (SQLite)  
-- JSON (padrão de comunicação)  
+| Categoria | Tecnologia | Justificativa de Uso (Decisões Técnicas) |
+| :--- | :--- | :--- |
+| **Backend** | Python, Flask | Escolha ideal para APIs pequenas/médias que exigem alta performance e controle, oferecendo flexibilidade e velocidade no desenvolvimento. |
+| **ORM/Database**| Flask-SQLAlchemy, SQLite | SQLite foi escolhido para simplificar a execução em ambiente local/Docker, eliminando a necessidade de um banco de dados externo para o desafio. |
+| **Autenticação**| Flask-JWT-Extended | Implementa um padrão de segurança **stateless** (sem estado) para rotas protegidas, garantindo acesso seguro com poucas linhas de código. |
+| **Validação** | Marshmallow | Usado para garantir a **Validação de Entrada** de todos os payloads (`POST`/`PUT`/`PATCH`) de forma declarativa e padronizada, prevenindo erros e vulnerabilidades. |
+| **Infraestrutura**| Docker, Docker Compose, Gunicorn | O **Docker Compose** garante a subida consistente do ambiente em qualquer SO. **Gunicorn** é o servidor WSGI de produção padrão para Python/Flask, oferecendo robustez e concorrência. |
+| **Testes** | Pytest | Framework padrão e simples, usado para verificar as regras de negócio críticas (como bloqueio de exclusão e unicidade de serial). |
+| **Migrations** | Flask-Migrate (Alembic) | Essencial para o versionamento e a evolução segura do schema do banco de dados (BDD), garantindo que as tabelas sejam criadas corretamente na inicialização. |
 
-**Frameworks e bibliotecas:**  
-- [Flask](https://flask.palletsprojects.com/) – microframework web  
-- [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) – ORM  
-- [Flask-Migrate](https://flask-migrate.readthedocs.io/) – migrações (Alembic)  
-- [Flask-JWT-Extended](https://flask-jwt-extended.readthedocs.io/) – autenticação JWT  
-- [Werkzeug](https://werkzeug.palletsprojects.com/) – utilitário de segurança (hash de senhas)  
-- [Pytest](https://docs.pytest.org/) – framework de testes  
-- [Gunicorn](https://gunicorn.org/) – servidor WSGI de produção  
+---
 
-**Banco de dados:**  
-- SQLite (padrão, pode ser substituído por outros compatíveis com SQLAlchemy)  
+## Endpoints e Exemplos de Requisição
 
-**Protocolo:**  
-- HTTP (RESTful)  
+A coleção do **Postman** (`postman_collection.json`) já contém todos os endpoints configurados, mas os exemplos abaixo demonstram o fluxo principal da API.
 
+**URL Base:** `http://localhost:5000`
+**Header de Acesso (Necessário para todas as rotas de CRUD):** `Authorization: Bearer <access_token>`
 
+### 1. Autenticação (POST)
+
+| Rota | Request Body (JSON) | Response Body (JSON - Sucesso) |
+| :--- | :--- | :--- |
+| `/auth/register` | `{"username": "admin", "password": "123456"}` | `{"msg": "Usuário criado com sucesso"}` |
+| `/auth/login` | `{"username": "admin", "password": "123456"}` | `{"access_token": "eyJhbGciOiJIUzI1NiI..."}` |
+
+### 2. CRUD de Categorias
+
+| Método | Rota | Descrição | Regras Específicas |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/categorias` | Cria nova categoria. | `nome` é obrigatório e único. |
+| `PUT/PATCH`| `/categorias/1` | Atualiza categoria. | Validação de `nome` único. |
+| `DELETE` | `/categorias/1` | Exclui. | **Bloqueado (400)** se houver dispositivos vinculados. |
+
+**Exemplo de Criação (POST /categorias)**
+```json
+{
+  "nome": "Servidores",
+  "descricao": "Máquinas de infraestrutura"
+}
